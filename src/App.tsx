@@ -16,6 +16,8 @@ import Pools from './pages/Pools'
 import Vaults from './pages/Vaults'
 import Circles from './pages/Circles'
 import Loans from './pages/Loans'
+import Referrals from './pages/Referrals'
+import OnRamp from './pages/OnRamp'
 
 const App: FC = () => {
   const network = (import.meta.env.VITE_NETWORK as WalletAdapterNetwork) || WalletAdapterNetwork.Devnet
@@ -38,9 +40,15 @@ const App: FC = () => {
         appearance: {
           theme: 'light',
           accentColor: '#7c3aed',
+          logo: 'https://stashpot-frontendd.vercel.app/stashpot-logo.png',
         },
         embeddedWallets: {
           createOnLogin: 'users-without-wallets',
+        },
+        externalWallets: {
+          solana: {
+            connectors: ['phantom', 'solflare'],
+          },
         },
       }}
     >
@@ -56,6 +64,8 @@ const App: FC = () => {
                 <Route path="/vaults" element={<Vaults />} />
                 <Route path="/circles" element={<Circles />} />
                 <Route path="/loans" element={<Loans />} />
+                <Route path="/referrals" element={<Referrals />} />
+                <Route path="/onramp" element={<OnRamp />} />
               </Route>
             </Routes>
           </WalletModalProvider>
