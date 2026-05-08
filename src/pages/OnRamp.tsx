@@ -7,7 +7,7 @@ const OnRamp: FC = () => {
       <h1 className="text-3xl font-bold mb-6">Buy USDC</h1>
       
       <div className="grid md:grid-cols-2 gap-4">
-        
+        <a
           href="https://www.yellowcard.io"
           target="_blank"
           rel="noopener noreferrer"
@@ -18,7 +18,7 @@ const OnRamp: FC = () => {
           <ExternalLink size={16} className="text-royal-600" />
         </a>
         
-        
+        <a
           href="https://global.transak.com"
           target="_blank"
           rel="noopener noreferrer"
