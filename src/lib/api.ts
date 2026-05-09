@@ -66,8 +66,6 @@ class ApiClient {
         }
       }
     )).data
-  }
-  }
 
   // User
   async getMe() { return (await this.client.get('/api/users/me')).data }
