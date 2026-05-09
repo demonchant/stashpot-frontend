@@ -48,89 +48,152 @@ class ApiClient {
     localStorage.removeItem('stashpot_token')
   }
 
-  // Auth
   async getNonce(wallet: string) {
     return (await this.client.get(`/api/auth/nonce/${wallet}`)).data
   }
-  
+
   async verifySignature(wallet: string, signature: string, nonce: string) {
     return (await this.client.post('/api/auth/verify', { wallet, signature, nonce })).data
   }
-  
+
   async verifyPrivy(idToken: string, walletAddress?: string) {
     return (await this.client.post('/api/auth/privy/verify', { walletAddress }, {
       headers: { 'Authorization': `Bearer ${idToken}` }
     })).data
   }
 
-  // User
-  async getMe() { return (await this.client.get('/api/users/me')).data }
-  async updateMe(data: any) { return (await this.client.patch('/api/users/me', data)).data }
-  async getHistory() { return (await this.client.get('/api/users/history')).data }
+  async getMe() {
+    return (await this.client.get('/api/users/me')).data
+  }
 
-  // Pools
-  async getPools() { return (await this.client.get('/api/pools')).data }
-  async getMyOdds() { return (await this.client.get('/api/pools/my-odds')).data }
+  async updateMe(data: any) {
+    return (await this.client.patch('/api/users/me', data)).data
+  }
+
+  async getHistory() {
+    return (await this.client.get('/api/users/history')).data
+  }
+
+  async getPools() {
+    return (await this.client.get('/api/pools')).data
+  }
+
+  async getMyOdds() {
+    return (await this.client.get('/api/pools/my-odds')).data
+  }
+
   async deposit(poolId: string, amount: number) {
     return (await this.client.post('/api/pools/deposit', { poolId, amount })).data
   }
+
   async withdraw(poolId: string, amount: number) {
     return (await this.client.post('/api/pools/withdraw', { poolId, amount })).data
   }
-  async getPoolHistory() { return (await this.client.get('/api/pools/history')).data }
 
-  // Vaults
-  async getVaults() { return (await this.client.get('/api/vaults')).data }
-  async createVault(data: any) { return (await this.client.post('/api/vaults', data)).data }
-  async pingVault(id: string) { return (await this.client.post(`/api/vaults/${id}/ping`)).data }
-  async cancelVault(id: string) { return (await this.client.delete(`/api/vaults/${id}`)).data }
+  async getPoolHistory() {
+    return (await this.client.get('/api/pools/history')).data
+  }
 
-  // Circles
-  async getCircles() { return (await this.client.get('/api/circles')).data }
-  async getPublicCircles() { return (await this.client.get('/api/circles/public')).data }
-  async createCircle(data: any) { return (await this.client.post('/api/circles', data)).data }
-  async joinCircle(id: string) { return (await this.client.post(`/api/circles/${id}/join`)).data }
+  async getVaults() {
+    return (await this.client.get('/api/vaults')).data
+  }
+
+  async createVault(data: any) {
+    return (await this.client.post('/api/vaults', data)).data
+  }
+
+  async pingVault(id: string) {
+    return (await this.client.post(`/api/vaults/${id}/ping`)).data
+  }
+
+  async cancelVault(id: string) {
+    return (await this.client.delete(`/api/vaults/${id}`)).data
+  }
+
+  async getCircles() {
+    return (await this.client.get('/api/circles')).data
+  }
+
+  async getPublicCircles() {
+    return (await this.client.get('/api/circles/public')).data
+  }
+
+  async createCircle(data: any) {
+    return (await this.client.post('/api/circles', data)).data
+  }
+
+  async joinCircle(id: string) {
+    return (await this.client.post(`/api/circles/${id}/join`)).data
+  }
+
   async contributeCircle(id: string, amount: number) {
     return (await this.client.post(`/api/circles/${id}/contribute`, { amount })).data
   }
 
-  // Loans
-  async getEligibleLoans() { return (await this.client.get('/api/loans/eligible')).data }
-  async getMyLoans() { return (await this.client.get('/api/loans/mine')).data }
-  async requestLoan(data: any) { return (await this.client.post('/api/loans/request', data)).data }
+  async getEligibleLoans() {
+    return (await this.client.get('/api/loans/eligible')).data
+  }
+
+  async getMyLoans() {
+    return (await this.client.get('/api/loans/mine')).data
+  }
+
+  async requestLoan(data: any) {
+    return (await this.client.post('/api/loans/request', data)).data
+  }
+
   async repayLoan(id: string, amount: number) {
     return (await this.client.post(`/api/loans/${id}/repay`, { amount })).data
   }
 
-  // Fiat
-  async getFiatRates() { return (await this.client.get('/api/fiat/rates')).data }
+  async getFiatRates() {
+    return (await this.client.get('/api/fiat/rates')).data
+  }
+
   async initiateFiatDeposit(data: any) {
     return (await this.client.post('/api/fiat/deposit/initiate', data)).data
   }
+
   async mockConfirmFiat(reference: string) {
     return (await this.client.post('/api/fiat/deposit/mock-confirm', { reference })).data
   }
-  async getFiatHistory() { return (await this.client.get('/api/fiat/history')).data }
 
-  // Referrals
-  async getReferralStats() { return (await this.client.get('/api/referrals/stats')).data }
-  async generateReferralCode() { return (await this.client.post('/api/referrals/generate')).data }
+  async getFiatHistory() {
+    return (await this.client.get('/api/fiat/history')).data
+  }
+
+  async getReferralStats() {
+    return (await this.client.get('/api/referrals/stats')).data
+  }
+
+  async generateReferralCode() {
+    return (await this.client.post('/api/referrals/generate')).data
+  }
+
   async registerReferral(code: string) {
     return (await this.client.post('/api/referrals/register', { code })).data
   }
-  async getReferralLeaderboard() { return (await this.client.get('/api/referrals/leaderboard')).data }
 
-  // Public Stats
-  async getProtocolInfo() { return (await this.client.get('/api/stats/protocol-info')).data }
-  async getYields() { return (await this.client.get('/api/stats/yields/current')).data }
+  async getReferralLeaderboard() {
+    return (await this.client.get('/api/referrals/leaderboard')).data
+  }
 
-  // Verify
+  async getProtocolInfo() {
+    return (await this.client.get('/api/stats/protocol-info')).data
+  }
+
+  async getYields() {
+    return (await this.client.get('/api/stats/yields/current')).data
+  }
+
   async verifyRound(roundId: string, poolType: string) {
     return (await this.client.get(`/api/verify/round/${roundId}?pool_type=${poolType}`)).data
   }
+
   async getWeights(poolType: string) {
     return (await this.client.get(`/api/verify/weights/${poolType}`)).data
   }
+
   async getOdds(wallet: string) {
     return (await this.client.get(`/api/verify/odds/${wallet}`)).data
   }
