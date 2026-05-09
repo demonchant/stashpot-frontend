@@ -16,7 +16,9 @@ import Pools from './pages/Pools'
 import Vaults from './pages/Vaults'
 import Circles from './pages/Circles'
 import Loans from './pages/Loans'
-
+import OnRamp from './pages/OnRamp'
+import Referrals from './pages/Referrals'
+import Verify from './pages/Verify'
 
 const App: FC = () => {
   const network = (import.meta.env.VITE_NETWORK as WalletAdapterNetwork) || WalletAdapterNetwork.Devnet
@@ -35,7 +37,7 @@ const App: FC = () => {
     <PrivyProvider
       appId={import.meta.env.VITE_PRIVY_APP_ID}
       config={{
-        loginMethods: ['email', 'google', 'wallet'],
+        loginMethods: ['email', 'wallet'],
         appearance: {
           theme: 'light',
           accentColor: '#7c3aed',
@@ -63,6 +65,9 @@ const App: FC = () => {
                 <Route path="/vaults" element={<Vaults />} />
                 <Route path="/circles" element={<Circles />} />
                 <Route path="/loans" element={<Loans />} />
+                <Route path="/onramp" element={<OnRamp />} />
+                <Route path="/referrals" element={<Referrals />} />
+                <Route path="/verify" element={<Verify />} />
               </Route>
             </Routes>
           </WalletModalProvider>
