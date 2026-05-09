@@ -1,21 +1,30 @@
 import { FC, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Wallet, Trophy, TrendingUp, Clock, ArrowUpRight, ArrowDownRight, Sparkles,
+  Wallet, Trophy, TrendingUp, Clock, ArrowUpRight, ArrowDownRight, Sparkles, Copy, Check,
 } from 'lucide-react'
+import { usePrivy } from '@privy-io/react-auth'
 import { Card, StatCard } from '../components/Card'
 import { Button } from '../components/Button'
 import { SEO } from '../components/SEO'
 import { api } from '../lib/api'
 import { formatUSDC, timeAgo } from '../lib/utils'
 import { useAuthStore } from '../store/auth'
+import toast from 'react-hot-toast'
 
 const Dashboard: FC = () => {
   const { user } = useAuthStore()
+  const { user: privyUser } = usePrivy()
   const [pools, setPools] = useState<any[]>([])
   const [odds, setOdds] = useState<any>(null)
   const [history, setHistory] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [copied, setCopied] = useState(false)
+
+  // Get Solana wallet address from Privy
+  const solanaWallet = privyUser?.linkedAccounts?.find(
+    (account: any) => account.type === 'wallet' && account.chainType === 'solana'
+  )?.address
 
   useEffect(() => {
     Promise.all([
@@ -29,6 +38,20 @@ const Dashboard: FC = () => {
 
   const totalDeposited = pools.reduce((s, p) => s + (parseFloat(p.balance) || 0), 0)
 
+  const copyAddress = () => {
+    if (solanaWallet) {
+      navigator.clipboard.writeText(solanaWallet)
+      setCopied(true)
+      toast.success('Address copied!')
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  const shortAddress = (addr: string) => {
+    if (!addr) return '—'
+    return `${addr.slice(0, 4)}...${addr.slice(-4)}`
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <SEO title="Dashboard" />
@@ -38,6 +61,22 @@ const Dashboard: FC = () => {
           Welcome back{user?.username ? `, ${user.username}` : ''}.
         </p>
         <h1 className="text-4xl lg:text-5xl font-bold tracking-tighter-2 text-ink-950">Your Stash</h1>
+        
+        {solanaWallet && (
+          <div className="mt-4 flex items-center gap-2">
+            <div className="flex items-center gap-2 px-4 py-2 bg-ink-100 rounded-lg">
+              <Wallet size={16} className="text-ink-600" />
+              <span className="font-mono text-sm text-ink-900">{shortAddress(solanaWallet)}</span>
+              <button
+                onClick={copyAddress}
+                className="p-1 hover:bg-ink-200 rounded transition-colors"
+                title="Copy address"
+              >
+                {copied ? <Check size={14} className="text-accent-600" /> : <Copy size={14} className="text-ink-600" />}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
