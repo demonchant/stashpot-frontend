@@ -1,7 +1,6 @@
 import { FC, useMemo, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { PrivyProvider } from '@privy-io/react-auth'
-import { solana } from '@privy-io/react-auth/solana'
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
@@ -48,8 +47,6 @@ const App: FC = () => {
           createOnLogin: 'users-without-wallets',
           noPromptOnSignature: true,
         },
-        defaultChain: solana,
-        supportedChains: [solana],
         externalWallets: {
           solana: {
             connectors: ['phantom', 'solflare']
