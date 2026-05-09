@@ -49,23 +49,19 @@ class ApiClient {
   }
 
   // Auth
-  async getNonce(wallet: string) { return (await this.client.get(`/api/auth/nonce/${wallet}`)).data }
+  async getNonce(wallet: string) {
+    return (await this.client.get(`/api/auth/nonce/${wallet}`)).data
+  }
+  
   async verifySignature(wallet: string, signature: string, nonce: string) {
     return (await this.client.post('/api/auth/verify', { wallet, signature, nonce })).data
   }
-  /**
-   * Privy auth path — exchanges a Privy ID token for a StashPot JWT.
-   * The backend calls privy.getUser({ idToken }) to authenticate.
-   */
+  
   async verifyPrivy(idToken: string, walletAddress?: string) {
-    return (await this.client.post('/api/auth/privy/verify',
-      { walletAddress },
-      {
-        headers: {
-          'Authorization': `Bearer ${idToken}`
-        }
-      }
-    )).data
+    return (await this.client.post('/api/auth/privy/verify', { walletAddress }, {
+      headers: { 'Authorization': `Bearer ${idToken}` }
+    })).data
+  }
 
   // User
   async getMe() { return (await this.client.get('/api/users/me')).data }
