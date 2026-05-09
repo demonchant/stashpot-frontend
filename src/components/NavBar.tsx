@@ -2,11 +2,12 @@ import { FC, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { usePrivy } from '@privy-io/react-auth'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { Menu, X, LogIn } from 'lucide-react'
+import { Menu, X, LogIn, LogOut } from 'lucide-react'
 import { cn } from '../lib/utils'
 import { Logo } from './Logo'
 import { useStashpotAuth } from '../hooks/useStashpotAuth'
 import { useAuthStore } from '../store/auth'
+import { api } from '../lib/api'
 
 const LINKS = [
   { href: '#features', label: 'Features' },
@@ -20,13 +21,13 @@ const NavBar: FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
   const navigate = useNavigate()
 
-  const { authenticated, ready } = usePrivy()
-  const { connected: walletConnected } = useWallet()
-  const { token } = useAuthStore()
+  const { authenticated, ready, logout: privyLogout } = usePrivy()
+  const { disconnect } = useWallet()
+  const { token, clearAuth } = useAuthStore()
   const { signIn } = useStashpotAuth()
 
   // Logged in if either Privy or our backend has a session
-  const loggedIn = !!token || authenticated || walletConnected
+  const loggedIn = !!token || authenticated
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -34,12 +35,24 @@ const NavBar: FC = () => {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  const handleSignOut = async () => {
+    // Clear API token
+    api.clearToken()
+    // Clear auth store
+    clearAuth()
+    // Logout from Privy
+    await privyLogout()
+    // Disconnect wallet
+    await disconnect()
+    // Redirect to home
+    navigate('/')
+  }
+
   const handleAuthClick = async () => {
     if (loggedIn) {
       navigate('/dashboard')
       return
     }
-    // signIn() opens the Privy modal — picks email, Google, passkey, Phantom, etc.
     await signIn()
   }
 
@@ -63,7 +76,7 @@ const NavBar: FC = () => {
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-8">
           {LINKS.map((l) => (
-            <a
+            
               key={l.href}
               href={l.href}
               className={cn(
@@ -79,7 +92,7 @@ const NavBar: FC = () => {
         <div className="hidden lg:flex items-center gap-3">
           <button
             onClick={handleAuthClick}
-            disabled={!ready && !walletConnected}
+            disabled={!ready}
             className={cn(
               'inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-royal',
               'bg-gradient-to-r from-royal-600 to-royal-700 text-white',
@@ -91,6 +104,20 @@ const NavBar: FC = () => {
             {ctaLabel}
             {loggedIn && <span aria-hidden>→</span>}
           </button>
+
+          {loggedIn && (
+            <button
+              onClick={handleSignOut}
+              className={cn(
+                'inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all',
+                'border border-ink-200 text-ink-700',
+                'hover:bg-ink-50',
+              )}
+            >
+              <LogOut size={14} />
+              Sign Out
+            </button>
+          )}
         </div>
 
         <button
@@ -106,7 +133,7 @@ const NavBar: FC = () => {
         <div className="lg:hidden border-t border-ink-100 bg-white shadow-soft-lg">
           <nav className="px-6 py-4 space-y-3">
             {LINKS.map((l) => (
-              <a
+              
                 key={l.href}
                 href={l.href}
                 onClick={() => setMobileOpen(false)}
@@ -115,18 +142,31 @@ const NavBar: FC = () => {
                 {l.label}
               </a>
             ))}
-            <div className="pt-3 border-t border-ink-100">
+            <div className="pt-3 border-t border-ink-100 space-y-2">
               <button
                 onClick={() => {
                   setMobileOpen(false)
                   handleAuthClick()
                 }}
-                disabled={!ready && !walletConnected}
+                disabled={!ready}
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-royal-600 to-royal-700 text-white text-sm font-semibold disabled:opacity-60"
               >
                 {!loggedIn && <LogIn size={14} />}
                 {ctaLabel}
               </button>
+
+              {loggedIn && (
+                <button
+                  onClick={() => {
+                    setMobileOpen(false)
+                    handleSignOut()
+                  }}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-ink-200 text-ink-700 text-sm font-semibold hover:bg-ink-50"
+                >
+                  <LogOut size={14} />
+                  Sign Out
+                </button>
+              )}
             </div>
           </nav>
         </div>
