@@ -26,7 +26,6 @@ const NavBar: FC = () => {
   const { token, clearAuth } = useAuthStore()
   const { signIn } = useStashpotAuth()
 
-  // Logged in if either Privy or our backend has a session
   const loggedIn = !!token || authenticated
 
   useEffect(() => {
@@ -36,15 +35,10 @@ const NavBar: FC = () => {
   }, [])
 
   const handleSignOut = async () => {
-    // Clear API token
     api.clearToken()
-    // Clear auth store
     clearAuth()
-    // Logout from Privy
     await privyLogout()
-    // Disconnect wallet
     await disconnect()
-    // Redirect to home
     navigate('/')
   }
 
@@ -73,7 +67,6 @@ const NavBar: FC = () => {
           </span>
         </Link>
 
-        {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-8">
           {LINKS.map((l) => (
             
