@@ -44,8 +44,7 @@ const App: FC = () => {
           logo: 'https://stashpot-frontendd.vercel.app/stashpot-logo.png',
         },
         embeddedWallets: {
-          createOnLogin: 'users-without-wallets',
-          noPromptOnSignature: true,
+          createOnLogin: 'off',
         },
         externalWallets: {
           solana: {
