@@ -58,10 +58,15 @@ class ApiClient {
    * The backend calls privy.getUser({ idToken }) to authenticate.
    */
   async verifyPrivy(idToken: string, walletAddress?: string) {
-    return (await this.client.post('/api/auth/privy/verify', {
-      idToken,
-      walletAddress,
-    })).data
+    return (await this.client.post('/api/auth/privy/verify',
+      { walletAddress },
+      {
+        headers: {
+          'Authorization': `Bearer ${idToken}`
+        }
+      }
+    )).data
+  }
   }
 
   // User
