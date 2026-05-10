@@ -4,6 +4,8 @@ import {
   Wallet, Trophy, TrendingUp, Clock, ArrowUpRight, ArrowDownRight, Sparkles, Copy, Check,
 } from 'lucide-react'
 import { usePrivy } from '@privy-io/react-auth'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { Card, StatCard } from '../components/Card'
 import { Button } from '../components/Button'
 import { SEO } from '../components/SEO'
@@ -15,16 +17,17 @@ import toast from 'react-hot-toast'
 const Dashboard: FC = () => {
   const { user } = useAuthStore()
   const { user: privyUser } = usePrivy()
+  const { publicKey } = useWallet()
   const [pools, setPools] = useState<any[]>([])
   const [odds, setOdds] = useState<any>(null)
   const [history, setHistory] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
 
-  // Get Solana wallet address from Privy
+  // Get Solana wallet address - from Privy linkedAccounts OR from wallet adapter
   const solanaWallet = privyUser?.linkedAccounts?.find(
     (account: any) => account.type === 'wallet' && account.chainType === 'solana'
-  )?.address
+  )?.address || publicKey?.toString()
 
   useEffect(() => {
     Promise.all([
@@ -52,6 +55,53 @@ const Dashboard: FC = () => {
     return `${addr.slice(0, 4)}...${addr.slice(-4)}`
   }
 
+  // If no Solana wallet connected, show connect prompt
+  if (!solanaWallet) {
+    return (
+      <div className="max-w-7xl mx-auto space-y-8">
+        <SEO title="Dashboard" />
+        <div className="max-w-2xl mx-auto text-center py-12">
+          <div className="mb-8">
+            <div className="w-20 h-20 mx-auto mb-4 bg-royal-100 rounded-full flex items-center justify-center">
+              <Wallet size={40} className="text-royal-600" />
+            </div>
+            <h1 className="text-3xl font-bold mb-4">Connect Your Solana Wallet</h1>
+            <p className="text-ink-600 mb-8">
+              To use StashPot's features, connect your Phantom or Solflare wallet to interact with our Anchor smart contracts on Solana devnet.
+            </p>
+          </div>
+          
+          <div className="flex justify-center">
+            <WalletMultiButton className="!bg-gradient-to-r !from-royal-600 !to-royal-700 hover:!from-royal-700 hover:!to-royal-800 !text-white !font-semibold !px-6 !py-3 !rounded-lg !shadow-royal" />
+          </div>
+
+          <div className="mt-12 p-6 bg-ink-50 rounded-xl text-left">
+            <h3 className="font-semibold mb-3">Why connect a wallet?</h3>
+            <ul className="space-y-2 text-sm text-ink-600">
+              <li className="flex items-start gap-2">
+                <span className="text-accent-600 mt-0.5">✓</span>
+                <span>Deposit USDC into prize pools and earn yield</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-accent-600 mt-0.5">✓</span>
+                <span>Create inheritance vaults and savings circles</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-accent-600 mt-0.5">✓</span>
+                <span>Win weekly prizes from pooled yield</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-accent-600 mt-0.5">✓</span>
+                <span>All transactions secured by Solana blockchain</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Normal dashboard with wallet connected
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <SEO title="Dashboard" />
