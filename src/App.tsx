@@ -37,7 +37,7 @@ const App: FC = () => {
     <PrivyProvider
       appId={import.meta.env.VITE_PRIVY_APP_ID}
       config={{
-        loginMethods: ['email', 'wallet'],
+        loginMethods: ['email'],
         appearance: {
           theme: 'light',
           accentColor: '#7c3aed',
@@ -46,11 +46,6 @@ const App: FC = () => {
         embeddedWallets: {
           createOnLogin: 'off',
         },
-        externalWallets: {
-          solana: {
-            connectors: ['phantom', 'solflare']
-          }
-        }
       }}
     >
       <ConnectionProvider endpoint={endpoint}>
