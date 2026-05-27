@@ -1,4 +1,4 @@
-content = '''export default function OnRamp() {
+export default function OnRamp() {
   return (
     <div className="max-w-4xl mx-auto p-8">
       <div className="text-center mb-12">
@@ -14,6 +14,7 @@ content = '''export default function OnRamp() {
           <p className="text-gray-600 mb-4">
             Direct conversion from local currencies using mobile money and bank transfers
           </p>
+
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>🇳🇬 Nigerian Naira (NGN)</span>
@@ -39,6 +40,7 @@ content = '''export default function OnRamp() {
           <p className="text-gray-600 mb-4">
             Buy crypto with credit/debit cards from anywhere in the world
           </p>
+
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Credit Card</span>
@@ -60,11 +62,13 @@ content = '''export default function OnRamp() {
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-royal-50 to-accent-50 p-8 rounded-xl text-center">
+      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-xl text-center">
         <h2 className="text-2xl font-bold mb-4">Coming Soon</h2>
         <p className="text-gray-700 mb-6">
-          We're integrating with Bridge, Coinbase Onramp, Yellow Card, and Transak to bring you the best on-ramp experience.
+          We're integrating with Bridge, Coinbase Onramp, Yellow Card, and Transak
+          to bring you the best on-ramp experience.
         </p>
+
         <div className="inline-flex gap-4">
           <div className="px-6 py-3 bg-white rounded-lg shadow-sm">
             <span className="text-sm text-gray-600">Powered by</span>
@@ -76,15 +80,10 @@ content = '''export default function OnRamp() {
       <div className="mt-12 bg-blue-50 border border-blue-200 rounded-xl p-6">
         <h3 className="font-bold mb-2">📱 For Demo Purposes</h3>
         <p className="text-sm text-gray-700">
-          This hackathon demo uses Solana devnet. To get test USDC for deposits, visit faucet.circle.com and select Solana Devnet.
+          This hackathon demo uses Solana devnet. To get test USDC for deposits,
+          visit faucet.circle.com and select Solana Devnet.
         </p>
       </div>
     </div>
-  )
+  );
 }
-'''
-
-with open('src/pages/OnRamp.tsx', 'w') as f:
-    f.write(content)
-    
-print("OnRamp.tsx created successfully!")
