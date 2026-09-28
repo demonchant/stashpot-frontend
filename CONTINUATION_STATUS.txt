@@ -1,0 +1,31 @@
+ M .gitignore
+ M .npmrc
+ M index.html
+ M package-lock.json
+ M package.json
+ M postcss.config.js
+ M public/robots.txt
+ M public/sitemap.xml
+ M src/index.css
+ M src/lib/images.ts
+ M src/lib/utils.ts
+ M src/vite-env.d.ts
+ M tailwind.config.js
+ M tsconfig.json
+ M tsconfig.node.json
+ M vercel.json
+ M vite.config.ts
+?? CONTINUATION_STATUS.txt
+?? docs/PRIZE_YIELD_ARCHITECTURE.md
+?? docs/SECURITY_AUDIT_CONTINUATION.md
+?? solana/
+?? src/lib/yield/
+?? tests/yield-allocation.test.ts
+
+Phase-2 continuation notes:
+- Circles delinquent-cycle recovery patched.
+- Reputation microloan principal exposure + authorized default write-off patched.
+- Prize multi-user draw remains security-gated pending reviewed on-chain randomness/VRF and cutoff snapshots.
+- Yield adapter boundary + Project 0 fail-closed adapter scaffold added.
+- No external yield deposits enabled.
+- Rust/Anchor unavailable in this environment; npm clean install exceeded runtime window. Re-run cargo/Anchor and npm tests before deployment.

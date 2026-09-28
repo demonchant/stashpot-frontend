@@ -1,0 +1,16 @@
+[workspace]
+members = ["programs/stashpot-vrf-adapter"]
+resolver = "2"
+
+[workspace.package]
+edition = "2021"
+license = "Apache-2.0"
+
+[workspace.dependencies]
+anchor-lang = "=0.32.1"
+orao-solana-vrf = { version = "=0.7.0", default-features = false, features = ["cpi"] }
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1

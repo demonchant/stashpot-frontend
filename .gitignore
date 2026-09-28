@@ -3,3 +3,10 @@
 node_modules/
 dist/
 *.log
+solana/target/
+solana/.anchor/
+solana/test-ledger/
+solana/**/target/
+solana/**/*.json
+!solana/package.json
+!solana/tsconfig.json

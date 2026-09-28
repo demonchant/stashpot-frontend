@@ -1,0 +1,12 @@
+[toolchain]
+anchor_version = "0.32.1"
+
+[programs.localnet]
+stashpot_vrf_adapter = "AtRDA6ABdzQRiJcBu4yCdCc4XAqZ3dwWx9uH8XatWLMS"
+
+[programs.devnet]
+stashpot_vrf_adapter = "AtRDA6ABdzQRiJcBu4yCdCc4XAqZ3dwWx9uH8XatWLMS"
+
+[provider]
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"

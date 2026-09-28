@@ -1,0 +1,20 @@
+[toolchain]
+anchor_version = "1.2.0"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+personal_savings = "6uP6Yz7GLmz6JciwSHRTbGcfPeJybUVdiFXzYF6A4pxi"
+timelock = "8ANFpb4Jni1BkRGY5aZubDCRr2mUdkUeshYHtM9WqRVA"
+prize_savings = "3LZnxEiTTGpfVQNHzBL683iFaspkYyxreyzMQEUqRqMj"
+savings_circles = "35u9epgyCDBtvn4h6MzBBCbWUC3bRm2r1scJZeJBvtnE"
+microloans = "8ww548YRZoz7APttt2JvZhtn4JuZ5Uf2vNAbAWkL8aVi"
+
+[provider]
+cluster = "localnet"
+wallet = "target/deploy/development-authority.json"
+
+[scripts]
+test = "cargo test --workspace"
