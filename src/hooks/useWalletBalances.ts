@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { getMainnetWalletBalances } from '../lib/solana'
 
@@ -9,6 +9,8 @@ export function useWalletBalances() {
   const [sol, setSol] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
+  const activeRequest = useRef(0)
 
   const refresh = useCallback(async () => {
     if (!publicKey) {
@@ -18,17 +20,22 @@ export function useWalletBalances() {
       return
     }
 
+    const requestId = ++activeRequest.current
     setLoading(true)
     setError(null)
     try {
       const balances = await getMainnetWalletBalances(connection, publicKey)
+      if (requestId !== activeRequest.current) return
       setUsdc(balances.usdc)
       setSol(balances.sol)
+      setUpdatedAt(new Date())
     } catch (err) {
       console.error('[wallet balance]', err)
-      setError('Could not read the wallet from Solana. Try refreshing in a moment.')
+      if (requestId === activeRequest.current) {
+        setError('Solana mainnet RPC did not return a valid balance after retries. No balance was estimated or substituted.')
+      }
     } finally {
-      setLoading(false)
+      if (requestId === activeRequest.current) setLoading(false)
     }
   }, [connection, publicKey])
 
@@ -42,5 +49,5 @@ export function useWalletBalances() {
     }
   }, [refresh])
 
-  return { usdc, sol, loading, error, refresh }
+  return { usdc, sol, loading, error, updatedAt, refresh }
 }

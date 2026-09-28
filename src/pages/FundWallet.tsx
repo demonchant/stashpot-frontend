@@ -1,5 +1,5 @@
 import { FC, useCallback, useEffect, useState } from 'react'
-import { useWallet } from '@solana/wallet-adapter-react'
+import { useConnection, useWallet } from '@solana/wallet-adapter-react'
 import { useWalletModal } from '@solana/wallet-adapter-react-ui'
 import {
   ArrowDownUp,
@@ -17,16 +17,25 @@ import { SEO } from '../components/SEO'
 import { useWalletBalances } from '../hooks/useWalletBalances'
 import {
   solscanAccountUrl,
+  solscanTransactionUrl,
   USDC_MAINNET_MINT_ADDRESS,
+  waitForSignatureConfirmation,
+  WRAPPED_SOL_MINT_ADDRESS,
 } from '../lib/solana'
 import { formatUSDC, shortAddress } from '../lib/utils'
 
 const FundWallet: FC = () => {
   const wallet = useWallet()
+  const { connection } = useConnection()
   const { setVisible } = useWalletModal()
   const { usdc, loading, error, refresh } = useWalletBalances()
   const [copied, setCopied] = useState<'wallet' | 'mint' | null>(null)
   const [pluginReady, setPluginReady] = useState(false)
+  const [swapReceipt, setSwapReceipt] = useState<{
+    signature: string
+    status: 'confirming' | 'confirmed' | 'failed'
+    message?: string
+  } | null>(null)
 
   const address = wallet.publicKey?.toBase58() || ''
 
@@ -35,6 +44,32 @@ const FundWallet: FC = () => {
     setCopied(kind)
     toast.success(kind === 'wallet' ? 'Wallet address copied' : 'Official USDC mint copied')
     window.setTimeout(() => setCopied(null), 1800)
+  }, [])
+
+  const handleSwapSuccess = useCallback(async ({ txid }: { txid: string }) => {
+    setSwapReceipt({ signature: txid, status: 'confirming' })
+    try {
+      await waitForSignatureConfirmation(connection, txid)
+      setSwapReceipt({ signature: txid, status: 'confirmed' })
+      toast.success(`Swap confirmed: ${shortAddress(txid, 6)}`)
+      await refresh()
+    } catch (confirmationError) {
+      const message = confirmationError instanceof Error ? confirmationError.message : 'Could not confirm the swap'
+      setSwapReceipt({ signature: txid, status: 'failed', message })
+      toast.error(message)
+    }
+  }, [connection, refresh])
+
+  const handleSwapError = useCallback(({ error }: { error?: unknown }) => {
+    const rawMessage = error instanceof Error
+      ? error.message
+      : typeof error === 'object' && error && 'message' in error
+        ? String((error as { message?: unknown }).message)
+        : ''
+    const message = /reject|declin|cancel/i.test(rawMessage)
+      ? 'Swap cancelled in your wallet.'
+      : rawMessage || 'Swap failed. Check your token balance, SOL for fees, and quote details.'
+    toast.error(message)
   }, [])
 
   useEffect(() => {
@@ -59,17 +94,17 @@ const FundWallet: FC = () => {
           overflow: 'hidden',
         },
         formProps: {
+          swapMode: 'ExactIn',
+          initialInputMint: WRAPPED_SOL_MINT_ADDRESS,
           initialOutputMint: USDC_MAINNET_MINT_ADDRESS,
-          fixedMint: USDC_MAINNET_MINT_ADDRESS,
         },
+        defaultExplorer: 'Solscan',
+        localStoragePrefix: 'stashpot-jupiter',
         enableWalletPassthrough: true,
         passthroughWalletContextState: wallet,
         onRequestConnectWallet: () => setVisible(true),
-        onSuccess: ({ txid }: { txid: string }) => {
-          toast.success(`Swap confirmed: ${shortAddress(txid, 6)}`)
-          window.setTimeout(refresh, 2_000)
-        },
-        onSwapError: () => toast.error('Swap was not completed'),
+        onSuccess: handleSwapSuccess,
+        onSwapError: handleSwapError,
       })
       setPluginReady(true)
     }
@@ -79,7 +114,7 @@ const FundWallet: FC = () => {
       if (timer) window.clearTimeout(timer)
       window.Jupiter?.close()
     }
-  }, [refresh, setVisible, wallet])
+  }, [handleSwapError, handleSwapSuccess, setVisible])
 
   useEffect(() => {
     window.Jupiter?.syncProps({ passthroughWalletContextState: wallet })
@@ -172,6 +207,23 @@ const FundWallet: FC = () => {
                 <div className="h-[520px] flex items-center justify-center text-sm text-ink-500">Loading Jupiter swap…</div>
               )}
               <div id="jupiter-usdc-swap" className={pluginReady ? 'block' : 'hidden'} />
+              {swapReceipt && (
+                <div className={`mx-3 mb-3 rounded-xl border p-4 text-sm ${
+                  swapReceipt.status === 'confirmed'
+                    ? 'border-accent-200 bg-accent-50 text-accent-900'
+                    : swapReceipt.status === 'failed'
+                      ? 'border-red-200 bg-red-50 text-red-800'
+                      : 'border-amber-200 bg-amber-50 text-amber-900'
+                }`}>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <span className="font-semibold capitalize">Swap {swapReceipt.status}</span>
+                    <a href={solscanTransactionUrl(swapReceipt.signature)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 underline">
+                      {shortAddress(swapReceipt.signature, 8)} <ExternalLink size={13} />
+                    </a>
+                  </div>
+                  {swapReceipt.message && <p className="mt-1">{swapReceipt.message}</p>}
+                </div>
+              )}
             </Card>
 
             <div className="lg:col-span-2 space-y-4">
@@ -187,6 +239,10 @@ const FundWallet: FC = () => {
               <Card className="p-6 border-accent-200 bg-accent-50">
                 <h3 className="font-bold text-ink-950 mb-2">No StashPot deposit address</h3>
                 <p className="text-sm text-ink-700">The address displayed is your connected wallet. There is no company wallet, virtual balance, or manual crediting step.</p>
+              </Card>
+              <Card className="p-6">
+                <h3 className="font-bold text-ink-950 mb-2">Swap safeguards</h3>
+                <p className="text-sm text-ink-600">SOL is the initial source and native USDC is the initial destination. You can select another supported Solana source token. Jupiter shows balances, route, expected output, price impact, fees and slippage before your wallet asks you to sign.</p>
               </Card>
             </div>
           </div>

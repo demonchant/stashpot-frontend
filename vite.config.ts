@@ -9,20 +9,5 @@ export default defineConfig({
   },
   build: {
     sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          solana: ['@solana/web3.js', '@solana/wallet-adapter-react', '@solana/wallet-adapter-react-ui'],
-          react: ['react', 'react-dom', 'react-router-dom'],
-        },
-      },
-    },
-  },
-  optimizeDeps: {
-    esbuildOptions: {
-      define: {
-        global: 'globalThis',
-      },
-    },
   },
 })

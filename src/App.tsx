@@ -5,7 +5,6 @@ import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui'
 import { PhantomWalletAdapter } from '@solana/wallet-adapter-phantom'
 import { SolflareWalletAdapter } from '@solana/wallet-adapter-solflare'
-import { clusterApiUrl } from '@solana/web3.js'
 import { Toaster } from 'react-hot-toast'
 import AOS from 'aos'
 import '@solana/wallet-adapter-react-ui/styles.css'
@@ -13,12 +12,10 @@ import Layout from './components/Layout'
 import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import FundWallet from './pages/FundWallet'
+import { getMainnetRpcEndpoint } from './lib/rpc'
 
 const App: FC = () => {
-  const endpoint = useMemo(
-    () => import.meta.env.VITE_SOLANA_MAINNET_RPC_URL || clusterApiUrl(WalletAdapterNetwork.Mainnet),
-    [],
-  )
+  const endpoint = useMemo(getMainnetRpcEndpoint, [])
   const wallets = useMemo(
     () => [new PhantomWalletAdapter(), new SolflareWalletAdapter({ network: WalletAdapterNetwork.Mainnet })],
     [],

@@ -3,6 +3,9 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "installCommand": "npm install",
+  "functions": {
+    "api/solana-rpc.ts": { "maxDuration": 10 }
+  },
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ],

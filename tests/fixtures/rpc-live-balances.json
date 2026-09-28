@@ -1,0 +1,4 @@
+[
+  {"jsonrpc":"2.0","id":1,"method":"getBalance","params":["GAZqKJr2TX1KEAymgdKTfbXExtdXyJ7eZj3xdSDJYrB",{"commitment":"confirmed"}]},
+  {"jsonrpc":"2.0","id":2,"method":"getTokenAccountsByOwner","params":["GAZqKJr2TX1KEAymgdKTfbXExtdXyJ7eZj3xdSDJYrB",{"mint":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"},{"encoding":"jsonParsed","commitment":"confirmed"}]}
+]
