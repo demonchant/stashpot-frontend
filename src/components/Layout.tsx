@@ -2,13 +2,28 @@ import { FC, useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { ArrowLeft, LayoutDashboard, Menu, ShieldCheck, WalletCards, X } from 'lucide-react'
+import {
+  Activity, ArrowLeft, ArrowUpFromLine, CircleDollarSign, Gift, HandCoins,
+  LayoutDashboard, LockKeyhole, Menu, PiggyBank, Settings, ShieldCheck,
+  Target, Trophy, WalletCards, X,
+} from 'lucide-react'
 import { cn, shortAddress } from '../lib/utils'
 import { Logo } from './Logo'
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/fund', label: 'Fund Wallet', icon: WalletCards },
+  { to: '/savings', label: 'Savings Pots', icon: PiggyBank },
+  { to: '/goals', label: 'Savings Goals', icon: Target },
+  { to: '/timelock', label: 'TimeLockr', icon: LockKeyhole },
+  { to: '/prize', label: 'Prize Savings', icon: Trophy },
+  { to: '/circles', label: 'Circles', icon: CircleDollarSign },
+  { to: '/microloans', label: 'Microloans', icon: HandCoins },
+  { to: '/activity', label: 'Activity', icon: Activity },
+  { to: '/withdrawals', label: 'Withdrawals', icon: ArrowUpFromLine },
+  { to: '/referrals', label: 'Referrals', icon: Gift },
+  { to: '/verify', label: 'Verify', icon: ShieldCheck },
+  { to: '/settings', label: 'Settings', icon: Settings },
 ]
 
 const Layout: FC = () => {
@@ -38,7 +53,7 @@ const Layout: FC = () => {
           <button className="lg:hidden text-ink-500" onClick={() => setSidebarOpen(false)} aria-label="Close menu"><X size={20} /></button>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -57,7 +72,7 @@ const Layout: FC = () => {
         <div className="p-4 border-t border-ink-100 space-y-3">
           <div className="rounded-xl border border-accent-200 bg-accent-50 p-3">
             <div className="flex items-center gap-2 text-xs font-semibold text-accent-800 mb-1"><ShieldCheck size={14} /> Self-custodial</div>
-            <p className="text-xs text-ink-600">Balances are read directly from Solana. StashPot cannot access your funds.</p>
+            <p className="text-xs text-ink-600">Wallet assets are read from Solana. Contract features stay unavailable until reviewed mainnet programs are configured.</p>
           </div>
           <WalletMultiButton className="!w-full !h-auto !py-2.5 !px-4 !rounded-xl !bg-ink-900 !text-sm !justify-center" />
         </div>
