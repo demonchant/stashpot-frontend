@@ -8,9 +8,9 @@ interface SEOProps {
   canonical?: string
 }
 
-const DEFAULT_TITLE = 'StashPot — Prize-Linked Savings on Solana'
+const DEFAULT_TITLE = 'StashPot — Personal USDC Wallet on Solana Mainnet'
 const DEFAULT_DESC =
-  'A savings protocol on Solana. Deposit USDC, earn DeFi yield, and enter prize draws funded by that yield. Principal stays yours.'
+  'Track, receive, and swap to native USDC in your own self-custodial Solana mainnet wallet.'
 const DEFAULT_IMAGE =
   'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=1200&h=630&fit=crop&q=80'
 

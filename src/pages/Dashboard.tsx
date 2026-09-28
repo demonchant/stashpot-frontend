@@ -1,212 +1,122 @@
 import { FC, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  Wallet, Trophy, TrendingUp, Clock, ArrowUpRight, ArrowDownRight, Sparkles, Copy, Check,
-} from 'lucide-react'
-import { usePrivy } from '@privy-io/react-auth'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import { Card, StatCard } from '../components/Card'
-import { Button } from '../components/Button'
-import { SEO } from '../components/SEO'
-import { api } from '../lib/api'
-import { formatUSDC, timeAgo } from '../lib/utils'
-import { useAuthStore } from '../store/auth'
+import { useWalletModal } from '@solana/wallet-adapter-react-ui'
+import { Check, Copy, ExternalLink, RefreshCw, ShieldCheck, Target, Wallet } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { Button } from '../components/Button'
+import { Card, StatCard } from '../components/Card'
+import { Input } from '../components/Input'
+import { SEO } from '../components/SEO'
+import { useWalletBalances } from '../hooks/useWalletBalances'
+import { solscanAccountUrl, USDC_MAINNET_MINT_ADDRESS } from '../lib/solana'
+import { formatUSDC, shortAddress } from '../lib/utils'
+
+const GOAL_KEY = 'stashpot_personal_savings_goal_usdc'
 
 const Dashboard: FC = () => {
-  const { user } = useAuthStore()
-  const { user: privyUser } = usePrivy()
-  const { publicKey } = useWallet()
-  const [pools, setPools] = useState<any[]>([])
-  const [odds, setOdds] = useState<any>(null)
-  const [history, setHistory] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const { publicKey, connected } = useWallet()
+  const { setVisible } = useWalletModal()
+  const { usdc, sol, loading, error, refresh } = useWalletBalances()
+  const [goal, setGoal] = useState(() => localStorage.getItem(GOAL_KEY) || '1000')
   const [copied, setCopied] = useState(false)
 
-  // Get Solana wallet address - from Privy linkedAccounts OR from wallet adapter
-  const solanaWallet = privyUser?.linkedAccounts?.find(
-    (account: any) => account.type === 'wallet' && account.chainType === 'solana'
-  )?.address || publicKey?.toString()
+  const address = publicKey?.toBase58() || ''
+  const goalNumber = Math.max(0, Number(goal) || 0)
+  const progress = goalNumber > 0 ? Math.min(100, (usdc / goalNumber) * 100) : 0
 
   useEffect(() => {
-    Promise.all([
-      api.getPools().catch(() => []),
-      api.getMyOdds().catch(() => null),
-      api.getHistory().catch(() => []),
-    ]).then(([p, o, h]) => {
-      setPools(p); setOdds(o); setHistory(h.slice(0, 5)); setLoading(false)
-    })
-  }, [])
+    localStorage.setItem(GOAL_KEY, goal)
+  }, [goal])
 
-  const totalDeposited = pools.reduce((s, p) => s + (parseFloat(p.balance) || 0), 0)
-
-  const copyAddress = () => {
-    if (solanaWallet) {
-      navigator.clipboard.writeText(solanaWallet)
-      setCopied(true)
-      toast.success('Address copied!')
-      setTimeout(() => setCopied(false), 2000)
-    }
+  const copyAddress = async () => {
+    if (!address) return
+    await navigator.clipboard.writeText(address)
+    setCopied(true)
+    toast.success('Wallet address copied')
+    window.setTimeout(() => setCopied(false), 1800)
   }
 
-  const shortAddress = (addr: string) => {
-    if (!addr) return '—'
-    return `${addr.slice(0, 4)}...${addr.slice(-4)}`
-  }
-
-  // If no Solana wallet connected, show connect prompt
-  if (!solanaWallet) {
+  if (!connected || !publicKey) {
     return (
-      <div className="max-w-7xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto">
         <SEO title="Dashboard" />
-        <div className="max-w-2xl mx-auto text-center py-12">
-          <div className="mb-8">
-            <div className="w-20 h-20 mx-auto mb-4 bg-royal-100 rounded-full flex items-center justify-center">
-              <Wallet size={40} className="text-royal-600" />
-            </div>
-            <h1 className="text-3xl font-bold mb-4">Connect Your Solana Wallet</h1>
-            <p className="text-ink-600 mb-8">
-              To use StashPot's features, connect your Phantom or Solflare wallet to interact with our Anchor smart contracts on Solana devnet.
-            </p>
+        <Card className="p-10 lg:p-16 text-center">
+          <div className="w-20 h-20 mx-auto mb-5 bg-royal-100 rounded-full flex items-center justify-center">
+            <Wallet size={38} className="text-royal-600" />
           </div>
-          
-          <div className="flex justify-center">
-            <WalletMultiButton className="!bg-gradient-to-r !from-royal-600 !to-royal-700 hover:!from-royal-700 hover:!to-royal-800 !text-white !font-semibold !px-6 !py-3 !rounded-lg !shadow-royal" />
+          <div className="inline-flex items-center gap-2 rounded-full bg-accent-50 px-3 py-1 text-xs font-semibold text-accent-700 mb-4">
+            <ShieldCheck size={13} /> Solana mainnet
           </div>
-
-          <div className="mt-12 p-6 bg-ink-50 rounded-xl text-left">
-            <h3 className="font-semibold mb-3">Why connect a wallet?</h3>
-            <ul className="space-y-2 text-sm text-ink-600">
-              <li className="flex items-start gap-2">
-                <span className="text-accent-600 mt-0.5">✓</span>
-                <span>Deposit USDC into prize pools and earn yield</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent-600 mt-0.5">✓</span>
-                <span>Create inheritance vaults and savings circles</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent-600 mt-0.5">✓</span>
-                <span>Win weekly prizes from pooled yield</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-accent-600 mt-0.5">✓</span>
-                <span>All transactions secured by Solana blockchain</span>
-              </li>
-            </ul>
-          </div>
-        </div>
+          <h1 className="text-3xl lg:text-4xl font-bold text-ink-950 mb-3">Connect your personal wallet</h1>
+          <p className="text-ink-600 max-w-xl mx-auto mb-7">StashPot reads your real native USDC balance directly from Solana. There is no backend account, custodial balance, or simulated credit.</p>
+          <Button size="lg" onClick={() => setVisible(true)}>Connect Phantom or Solflare</Button>
+        </Card>
       </div>
     )
   }
 
-  // Normal dashboard with wallet connected
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      <SEO title="Dashboard" />
+      <SEO title="Mainnet Dashboard" />
 
-      <div>
-        <p className="text-ink-500 text-sm font-mono mb-2">
-          Welcome back{user?.username ? `, ${user.username}` : ''}.
-        </p>
-        <h1 className="text-4xl lg:text-5xl font-bold tracking-tighter-2 text-ink-950">Your Stash</h1>
-        
-        {solanaWallet && (
-          <div className="mt-4 flex items-center gap-2">
-            <div className="flex items-center gap-2 px-4 py-2 bg-ink-100 rounded-lg">
-              <Wallet size={16} className="text-ink-600" />
-              <span className="font-mono text-sm text-ink-900">{shortAddress(solanaWallet)}</span>
-              <button
-                onClick={copyAddress}
-                className="p-1 hover:bg-ink-200 rounded transition-colors"
-                title="Copy address"
-              >
-                {copied ? <Check size={14} className="text-accent-600" /> : <Copy size={14} className="text-ink-600" />}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="USDC Balance" value={formatUSDC(user?.usdc || '0')} icon={<Wallet size={18} />} subtext="Available" />
-        <StatCard label="In Prize Pools" value={formatUSDC(totalDeposited)} icon={<Trophy size={18} />} trend="up" trendValue="earning" />
-        <StatCard label="StashScore" value={user?.composite ?? 0} icon={<Sparkles size={18} />} subtext={user?.tier || 'Building...'} />
-        <StatCard label="Blended APY" value="8.74%" icon={<TrendingUp size={18} />} subtext="4 protocols" trend="up" trendValue="+0.12%" />
-      </div>
-
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-ink-950 tracking-tight">Active Positions</h2>
-          <Link to="/pools">
-            <Button variant="ghost" size="sm" rightIcon={<ArrowUpRight size={14} />}>View All</Button>
-          </Link>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-accent-700 text-sm font-mono mb-2">Solana mainnet · live on-chain data</p>
+          <h1 className="text-4xl lg:text-5xl font-bold tracking-tighter-2 text-ink-950">Your Stash</h1>
+          <button onClick={copyAddress} className="mt-3 inline-flex items-center gap-2 rounded-lg bg-ink-100 px-3 py-2 text-sm font-mono text-ink-700 hover:bg-ink-200">
+            {shortAddress(address, 6)} {copied ? <Check size={14} className="text-accent-600" /> : <Copy size={14} />}
+          </button>
         </div>
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[1,2,3].map(i => <div key={i} className="h-40 rounded-2xl bg-ink-100 animate-pulse" />)}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {['daily','weekly','monthly'].map(pt => {
-              const pool = pools.find(p => p.type === pt)
-              const myOdds = odds?.[pt]
-              return (
-                <Card key={pt} hover className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs uppercase tracking-widest text-ink-500 font-medium">{pt}</span>
-                    <span className="text-xs px-2 py-1 rounded-full bg-accent-50 text-accent-700 font-medium">{pool?.prize_share || '—'}</span>
-                  </div>
-                  <p className="text-ink-500 text-xs mb-1">My win chance</p>
-                  <p className="text-3xl font-bold text-ink-900 mb-4 tabular tracking-tighter-2">{myOdds?.chance || '0%'}</p>
-                  <div className="space-y-2 text-xs text-ink-600">
-                    <div className="flex justify-between"><span>Pool size</span><span className="font-mono text-ink-900">{pool?.participants ?? 0}</span></div>
-                    <div className="flex justify-between"><span>Total pool</span><span className="font-mono text-ink-900">{formatUSDC(pool?.balance || 0)}</span></div>
-                  </div>
-                </Card>
-              )
-            })}
-          </div>
-        )}
+        <div className="flex gap-2">
+          <Button variant="secondary" loading={loading} onClick={refresh} leftIcon={<RefreshCw size={15} />}>Refresh</Button>
+          <Link to="/fund"><Button>Fund wallet</Button></Link>
+        </div>
       </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-ink-950 tracking-tight">Recent Activity</h2>
-          <Clock size={18} className="text-ink-400" />
-        </div>
-        {history.length === 0 ? (
-          <Card className="p-12 text-center">
-            <p className="text-ink-500 mb-4">No activity yet.</p>
-            <Link to="/pools"><Button>Deposit USDC</Button></Link>
-          </Card>
-        ) : (
-          <Card className="divide-y divide-ink-100">
-            {history.map((tx, i) => (
-              <div key={i} className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    ['deposit','fiat_deposit','pool_win'].includes(tx.type)
-                      ? 'bg-accent-50 text-accent-600' : 'bg-ink-100 text-ink-600'
-                  }`}>
-                    {['deposit','fiat_deposit','pool_win'].includes(tx.type) ? <ArrowDownRight size={18} /> : <ArrowUpRight size={18} />}
-                  </div>
-                  <div>
-                    <p className="font-medium text-ink-900 capitalize">{tx.type.replace('_',' ')}</p>
-                    <p className="text-ink-500 text-xs">{timeAgo(tx.created_at)}</p>
-                  </div>
-                </div>
-                <p className={`font-mono font-semibold ${
-                  ['deposit','fiat_deposit','pool_win'].includes(tx.type) ? 'text-accent-600' : 'text-ink-900'
-                }`}>
-                  {['deposit','fiat_deposit','pool_win'].includes(tx.type) ? '+' : '−'}{formatUSDC(tx.amount)}
-                </p>
+      {error && <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <StatCard label="Native USDC" value={formatUSDC(usdc)} icon={<Wallet size={18} />} subtext="Available in your wallet" />
+        <StatCard label="SOL for fees" value={`${sol.toFixed(4)} SOL`} icon={<Wallet size={18} />} subtext="Mainnet network fees" />
+        <StatCard label="Network" value="Mainnet" icon={<ShieldCheck size={18} />} subtext="Real assets · real value" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <Card className="lg:col-span-3 p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <Target size={20} className="text-royal-600" />
+            <h2 className="text-xl font-bold text-ink-950">Personal savings target</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_180px] gap-4 items-end">
+            <div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-ink-600">{formatUSDC(usdc)} saved</span>
+                <span className="font-semibold text-royal-700">{progress.toFixed(1)}%</span>
               </div>
-            ))}
-          </Card>
-        )}
+              <div className="h-3 rounded-full bg-ink-100 overflow-hidden">
+                <div className="h-full rounded-full bg-gradient-to-r from-royal-600 to-accent-500 transition-all" style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+            <Input label="Target" type="number" min="0" value={goal} onChange={(event) => setGoal(event.target.value)} rightAddon="USDC" />
+          </div>
+          <p className="text-xs text-ink-500 mt-4">Your target is stored only in this browser. Your wallet and USDC remain on Solana.</p>
+        </Card>
+
+        <Card className="lg:col-span-2 p-6">
+          <h2 className="text-xl font-bold text-ink-950 mb-4">Asset verification</h2>
+          <p className="text-sm text-ink-600 mb-2">Only Circle-issued native USDC is counted.</p>
+          <code className="block rounded-lg bg-ink-50 border border-ink-200 p-3 text-xs break-all text-ink-800">{USDC_MAINNET_MINT_ADDRESS}</code>
+          <a href={solscanAccountUrl(address)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 mt-4 text-sm font-semibold text-royal-700 hover:text-royal-800">
+            View wallet on Solscan <ExternalLink size={14} />
+          </a>
+        </Card>
       </div>
+
+      <Card className="p-6 border-amber-200 bg-amber-50">
+        <h2 className="font-bold text-amber-950 mb-2">Production safety boundary</h2>
+        <p className="text-sm text-amber-900">Prize pools, loans, circles, and inheritance vaults are not enabled because no verified StashPot mainnet programs were found. This build will not ask you to send real funds into an unverified contract.</p>
+      </Card>
     </div>
   )
 }

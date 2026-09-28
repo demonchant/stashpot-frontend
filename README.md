@@ -1,96 +1,43 @@
-# StashPot Frontend
+# StashPot Mainnet Wallet
 
-A savings protocol on Solana. Email magic link auth via Privy. Wallet fallback via Solana wallet adapter.
+StashPot is a self-custodial personal USDC dashboard for Solana mainnet.
 
-## Stack
+## What it does
 
-- React 18 + TypeScript + Vite
-- Tailwind CSS
-- Privy (`@privy-io/react-auth`) — primary auth & embedded wallets
-- Solana wallet adapter — fallback for Phantom / Solflare power users
-- Swiper.js + AOS for scroll animations and carousels
+- Connects Phantom or Solflare.
+- Reads the wallet's real SOL and native USDC balances from Solana mainnet.
+- Displays a receive address for direct native-USDC transfers.
+- Embeds the official Jupiter Plugin to swap supported Solana assets to USDC.
+- Tracks a personal savings target locally in the browser.
 
-## Quick start
+StashPot never receives private keys, recovery phrases, or custody of funds. The old
+Render API and its simulated off-chain balances are not used.
+
+## Safety boundary
+
+Prize pools, loans, circles, and inheritance vaults are intentionally unavailable.
+No verified or audited StashPot mainnet program deployment exists in the public
+project, so this build does not route real assets into those features.
+
+## Setup
 
 ```bash
 npm install
-cp .env.example .env
-# Edit .env — fill in VITE_API_URL and VITE_PRIVY_APP_ID
+cp .env.example .env.local
 npm run dev
 ```
 
-Open http://localhost:5173
+`VITE_SOLANA_MAINNET_RPC_URL` is optional. If omitted, the public Solana mainnet
+RPC endpoint is used.
 
-## Environment variables
+## Checks
 
-| Var | Required | Description |
-|---|---|---|
-| `VITE_API_URL` | yes | Backend URL (e.g. `https://stashpot-backend.onrender.com`) |
-| `VITE_PRIVY_APP_ID` | yes | Privy app ID from https://dashboard.privy.io |
-| `VITE_SOLANA_RPC_URL` | yes | Devnet or mainnet RPC endpoint |
-| `VITE_SOLANA_MAINNET_RPC_URL` | optional | Mainnet RPC for prod |
-| `VITE_NETWORK` | yes | `devnet` or `mainnet-beta` |
-
-## Scripts
-
-| Command | What it does |
-|---|---|
-| `npm run dev` | Start dev server on :5173 |
-| `npm run build` | Production build (Vite only, no tsc — fast & forgiving) |
-| `npm run build:strict` | Production build with TypeScript checks |
-| `npm run typecheck` | Type-check without emitting |
-| `npm run preview` | Preview the production build locally |
-
-## Deployment
-
-See `DEPLOYMENT.md` (provided alongside this codebase) for the full step-by-step
-guide covering:
-- GitHub repo reset
-- Vercel project setup
-- Privy dashboard configuration
-- Backend `/api/auth/privy/verify` route wiring
-
-## Auth flow
-
-1. User clicks "Get started" → opens Privy modal
-2. User picks email magic link, Google, passkey, or external wallet (Phantom etc)
-3. Privy authenticates the user and provisions an embedded Solana wallet if needed
-4. Frontend calls `getAccessToken()` to get a Privy JWT
-5. Frontend POSTs `{ idToken, walletAddress }` to `/api/auth/privy/verify`
-6. Backend verifies the JWT signature with `privy.verifyAuthToken(token)`
-7. Backend upserts the StashPot user, links the Solana wallet, and issues a StashPot JWT
-8. All subsequent API calls use the StashPot JWT in `Authorization: Bearer ...`
-
-## Folder structure
-
+```bash
+npm run typecheck
+npm run build
 ```
-src/
-├── App.tsx                    # PrivyProvider + Solana wallet adapter wrap
-├── main.tsx                   # ReactDOM root
-├── index.css                  # Tailwind + global styles
-├── components/
-│   ├── Layout.tsx             # Logged-in shell with sidebar
-│   ├── NavBar.tsx             # Landing page top nav
-│   ├── Footer.tsx
-│   ├── Logo.tsx               # Wraps /public/stashpot-logo.png
-│   ├── PartnerLogos.tsx       # SVG wordmarks for Solana/Kamino/etc
-│   └── SEO.tsx
-├── hooks/
-│   └── useStashpotAuth.ts     # Privy + wallet adapter dual flow
-├── lib/
-│   ├── api.ts                 # Axios client with all backend routes
-│   ├── images.ts              # Verified Unsplash image registry
-│   └── utils.ts               # cn(), shortAddress(), formatUSDC()
-├── pages/
-│   ├── Landing.tsx            # Marketing site
-│   ├── Dashboard.tsx
-│   ├── Pools.tsx
-│   ├── Vaults.tsx             # TimeLockr (inheritance + escrow)
-│   ├── Circles.tsx
-│   ├── Loans.tsx
-│   ├── Fiat.tsx               # On-ramp via Yellow Card / Transak
-│   ├── Verify.tsx             # Public draw verification
-│   └── Referrals.tsx
-└── store/
-    └── auth.ts                # Zustand store for StashPot session
-```
+
+## Production
+
+The application is pinned to Solana mainnet. It counts only Circle-issued native
+USDC at mint `EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v`.

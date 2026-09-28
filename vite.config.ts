@@ -14,7 +14,6 @@ export default defineConfig({
         manualChunks: {
           solana: ['@solana/web3.js', '@solana/wallet-adapter-react', '@solana/wallet-adapter-react-ui'],
           react: ['react', 'react-dom', 'react-router-dom'],
-          swiper: ['swiper'],
         },
       },
     },
