@@ -351,12 +351,12 @@ pub struct FundTreasury<'info> {
 #[instruction(loan_id: u64)]
 pub struct BorrowReputation<'info> {
     #[account(mut)] pub borrower: Signer<'info>,
-    #[account(mut, has_one = mint @ LoanError::WrongMint, has_one = treasury_vault @ LoanError::WrongTreasury)] pub policy: Account<'info, LendingPolicy>,
-    #[account(mut, has_one = policy @ LoanError::WrongPolicy, has_one = borrower @ LoanError::Unauthorized)] pub profile: Account<'info, BorrowerProfile>,
-    #[account(init, payer = borrower, space = 8 + Loan::INIT_SPACE, seeds = [b"loan", policy.key().as_ref(), borrower.key().as_ref(), &loan_id.to_le_bytes()], bump)] pub loan: Account<'info, Loan>,
-    #[account(constraint = mint.key() == NATIVE_USDC_MINT @ LoanError::WrongMint)] pub mint: Account<'info, Mint>,
-    #[account(mut, token::mint = mint, token::authority = policy)] pub treasury_vault: Account<'info, TokenAccount>,
-    #[account(mut, token::mint = mint, token::authority = borrower)] pub borrower_token: Account<'info, TokenAccount>,
+    #[account(mut, has_one = mint @ LoanError::WrongMint, has_one = treasury_vault @ LoanError::WrongTreasury)] pub policy: Box<Account<'info, LendingPolicy>>,
+    #[account(mut, has_one = policy @ LoanError::WrongPolicy, has_one = borrower @ LoanError::Unauthorized)] pub profile: Box<Account<'info, BorrowerProfile>>,
+    #[account(init, payer = borrower, space = 8 + Loan::INIT_SPACE, seeds = [b"loan", policy.key().as_ref(), borrower.key().as_ref(), &loan_id.to_le_bytes()], bump)] pub loan: Box<Account<'info, Loan>>,
+    #[account(constraint = mint.key() == NATIVE_USDC_MINT @ LoanError::WrongMint)] pub mint: Box<Account<'info, Mint>>,
+    #[account(mut, token::mint = mint, token::authority = policy)] pub treasury_vault: Box<Account<'info, TokenAccount>>,
+    #[account(mut, token::mint = mint, token::authority = borrower)] pub borrower_token: Box<Account<'info, TokenAccount>>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
@@ -365,13 +365,13 @@ pub struct BorrowReputation<'info> {
 #[instruction(loan_id: u64)]
 pub struct BorrowSecured<'info> {
     #[account(mut)] pub borrower: Signer<'info>,
-    #[account(has_one = mint @ LoanError::WrongMint, has_one = treasury_vault @ LoanError::WrongTreasury)] pub policy: Account<'info, LendingPolicy>,
-    #[account(mut, has_one = policy @ LoanError::WrongPolicy, has_one = borrower @ LoanError::Unauthorized)] pub profile: Account<'info, BorrowerProfile>,
-    #[account(init, payer = borrower, space = 8 + Loan::INIT_SPACE, seeds = [b"loan", policy.key().as_ref(), borrower.key().as_ref(), &loan_id.to_le_bytes()], bump)] pub loan: Account<'info, Loan>,
-    #[account(init, payer = borrower, token::mint = mint, token::authority = loan, token::token_program = token_program, seeds = [b"collateral", loan.key().as_ref()], bump)] pub collateral_vault: Account<'info, TokenAccount>,
-    #[account(constraint = mint.key() == NATIVE_USDC_MINT @ LoanError::WrongMint)] pub mint: Account<'info, Mint>,
-    #[account(mut, token::mint = mint, token::authority = policy)] pub treasury_vault: Account<'info, TokenAccount>,
-    #[account(mut, token::mint = mint, token::authority = borrower)] pub borrower_token: Account<'info, TokenAccount>,
+    #[account(has_one = mint @ LoanError::WrongMint, has_one = treasury_vault @ LoanError::WrongTreasury)] pub policy: Box<Account<'info, LendingPolicy>>,
+    #[account(mut, has_one = policy @ LoanError::WrongPolicy, has_one = borrower @ LoanError::Unauthorized)] pub profile: Box<Account<'info, BorrowerProfile>>,
+    #[account(init, payer = borrower, space = 8 + Loan::INIT_SPACE, seeds = [b"loan", policy.key().as_ref(), borrower.key().as_ref(), &loan_id.to_le_bytes()], bump)] pub loan: Box<Account<'info, Loan>>,
+    #[account(init, payer = borrower, token::mint = mint, token::authority = loan, token::token_program = token_program, seeds = [b"collateral", loan.key().as_ref()], bump)] pub collateral_vault: Box<Account<'info, TokenAccount>>,
+    #[account(constraint = mint.key() == NATIVE_USDC_MINT @ LoanError::WrongMint)] pub mint: Box<Account<'info, Mint>>,
+    #[account(mut, token::mint = mint, token::authority = policy)] pub treasury_vault: Box<Account<'info, TokenAccount>>,
+    #[account(mut, token::mint = mint, token::authority = borrower)] pub borrower_token: Box<Account<'info, TokenAccount>>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
     pub rent: Sysvar<'info, Rent>,
@@ -419,13 +419,13 @@ pub struct CloseDefaultedReputation<'info> {
 #[derive(Accounts)]
 pub struct LiquidateSecured<'info> {
     pub caller: Signer<'info>,
-    #[account(has_one = mint @ LoanError::WrongMint, has_one = treasury_vault @ LoanError::WrongTreasury)] pub policy: Account<'info, LendingPolicy>,
-    #[account(mut, has_one = policy @ LoanError::WrongPolicy)] pub profile: Account<'info, BorrowerProfile>,
-    #[account(mut, has_one = policy @ LoanError::WrongPolicy, has_one = collateral_vault @ LoanError::WrongCollateralVault, constraint = loan.borrower == profile.borrower @ LoanError::BorrowerSubstitution)] pub loan: Account<'info, Loan>,
-    #[account(constraint = mint.key() == NATIVE_USDC_MINT @ LoanError::WrongMint)] pub mint: Account<'info, Mint>,
-    #[account(mut, token::mint = mint, token::authority = loan)] pub collateral_vault: Account<'info, TokenAccount>,
-    #[account(mut, token::mint = mint, token::authority = policy)] pub treasury_vault: Account<'info, TokenAccount>,
-    #[account(mut, token::mint = mint, token::authority = profile.borrower)] pub borrower_token: Account<'info, TokenAccount>,
+    #[account(has_one = mint @ LoanError::WrongMint, has_one = treasury_vault @ LoanError::WrongTreasury)] pub policy: Box<Account<'info, LendingPolicy>>,
+    #[account(mut, has_one = policy @ LoanError::WrongPolicy)] pub profile: Box<Account<'info, BorrowerProfile>>,
+    #[account(mut, has_one = policy @ LoanError::WrongPolicy, has_one = collateral_vault @ LoanError::WrongCollateralVault, constraint = loan.borrower == profile.borrower @ LoanError::BorrowerSubstitution)] pub loan: Box<Account<'info, Loan>>,
+    #[account(constraint = mint.key() == NATIVE_USDC_MINT @ LoanError::WrongMint)] pub mint: Box<Account<'info, Mint>>,
+    #[account(mut, token::mint = mint, token::authority = loan)] pub collateral_vault: Box<Account<'info, TokenAccount>>,
+    #[account(mut, token::mint = mint, token::authority = policy)] pub treasury_vault: Box<Account<'info, TokenAccount>>,
+    #[account(mut, token::mint = mint, token::authority = profile.borrower)] pub borrower_token: Box<Account<'info, TokenAccount>>,
     pub token_program: Program<'info, Token>,
 }
 
