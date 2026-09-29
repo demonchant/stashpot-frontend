@@ -234,12 +234,12 @@ pub struct ManageCircle<'info> {
 #[derive(Accounts)]
 pub struct Contribute<'info> {
     #[account(mut)] pub owner: Signer<'info>,
-    #[account(mut, has_one = mint @ CircleError::WrongMint, has_one = vault @ CircleError::WrongVault)] pub circle: Account<'info, SavingsCircle>,
-    #[account(mut, has_one = circle @ CircleError::WrongCircle, has_one = owner @ CircleError::Unauthorized, constraint = member.active @ CircleError::InactiveMember)] pub member: Account<'info, CircleMember>,
-    #[account(init, payer = owner, space = 8 + CircleContribution::INIT_SPACE, seeds = [b"contribution", circle.key().as_ref(), &circle.current_cycle.to_le_bytes(), member.key().as_ref()], bump)] pub contribution: Account<'info, CircleContribution>,
-    #[account(constraint = mint.key() == NATIVE_USDC_MINT @ CircleError::WrongMint)] pub mint: Account<'info, Mint>,
-    #[account(mut, token::mint = mint, token::authority = owner)] pub member_token: Account<'info, TokenAccount>,
-    #[account(mut, token::mint = mint, token::authority = circle)] pub vault: Account<'info, TokenAccount>,
+    #[account(mut, has_one = mint @ CircleError::WrongMint, has_one = vault @ CircleError::WrongVault)] pub circle: Box<Account<'info, SavingsCircle>>,
+    #[account(mut, has_one = circle @ CircleError::WrongCircle, has_one = owner @ CircleError::Unauthorized, constraint = member.active @ CircleError::InactiveMember)] pub member: Box<Account<'info, CircleMember>>,
+    #[account(init, payer = owner, space = 8 + CircleContribution::INIT_SPACE, seeds = [b"contribution", circle.key().as_ref(), &circle.current_cycle.to_le_bytes(), member.key().as_ref()], bump)] pub contribution: Box<Account<'info, CircleContribution>>,
+    #[account(constraint = mint.key() == NATIVE_USDC_MINT @ CircleError::WrongMint)] pub mint: Box<Account<'info, Mint>>,
+    #[account(mut, token::mint = mint, token::authority = owner)] pub member_token: Box<Account<'info, TokenAccount>>,
+    #[account(mut, token::mint = mint, token::authority = circle)] pub vault: Box<Account<'info, TokenAccount>>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
 }
