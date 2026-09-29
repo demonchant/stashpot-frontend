@@ -506,12 +506,12 @@ pub struct JoinPool<'info> {
 pub struct UseParticipant<'info> {
     #[account(mut)] pub owner: Signer<'info>,
     #[account(mut, has_one = mint @ PrizeError::WrongMint, has_one = principal_vault @ PrizeError::WrongVault, seeds = [b"pool", pool.authority.as_ref(), &pool.pool_id.to_le_bytes()], bump = pool.bump)]
-    pub pool: Account<'info, PrizePool>,
+    pub pool: Box<Account<'info, PrizePool>>,
     #[account(mut, has_one = pool @ PrizeError::WrongPool, has_one = owner @ PrizeError::Unauthorized, seeds = [b"participant", pool.key().as_ref(), owner.key().as_ref()], bump = participant.bump)]
-    pub participant: Account<'info, Participant>,
-    #[account(constraint = mint.key() == NATIVE_USDC_MINT @ PrizeError::WrongMint)] pub mint: Account<'info, Mint>,
-    #[account(mut, token::mint = mint, token::authority = owner, token::token_program = token_program)] pub owner_token: Account<'info, TokenAccount>,
-    #[account(mut, token::mint = mint, token::authority = pool, token::token_program = token_program)] pub principal_vault: Account<'info, TokenAccount>,
+    pub participant: Box<Account<'info, Participant>>,
+    #[account(constraint = mint.key() == NATIVE_USDC_MINT @ PrizeError::WrongMint)] pub mint: Box<Account<'info, Mint>>,
+    #[account(mut, token::mint = mint, token::authority = owner, token::token_program = token_program)] pub owner_token: Box<Account<'info, TokenAccount>>,
+    #[account(mut, token::mint = mint, token::authority = pool, token::token_program = token_program)] pub principal_vault: Box<Account<'info, TokenAccount>>,
     pub token_program: Program<'info, Token>,
 }
 
